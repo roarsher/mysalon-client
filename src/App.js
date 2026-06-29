@@ -10,6 +10,10 @@ import PrivateRoute         from './components/common/PrivateRoute';
 import Navbar               from './components/layout/Navbar';
 import NotificationsPage from './pages/NotificationsPage';
 
+import AdminDashboard from './pages/admin/AdminDashboard';
+ 
+
+
 
 import HomePage           from './pages/HomePage';
 import LoginPage          from './pages/LoginPage';
@@ -63,6 +67,7 @@ export default function App() {
               <Route path="/owner/queue/:salonId" element={<PrivateRoute><QueueManagerPage /></PrivateRoute>} />
 
               <Route path="*" element={<Navigate to="/" replace />} />
+              <Route path="/admin" element={<PrivateRoute><AdminDashboard /></PrivateRoute>} />
             </Routes>
           </div>
 

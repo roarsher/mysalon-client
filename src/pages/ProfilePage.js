@@ -152,12 +152,7 @@ export default function ProfilePage() {
             <span>✂️ Owner Dashboard</span><span className="text-gray-300">›</span>
           </button>
         )}
-        {currentUser.role !== 'salon_owner' && (
-          <button onClick={() => navigate('/signup')}
-            className="w-full flex items-center justify-between px-4 py-3 text-sm text-primary hover:bg-primary-50 transition">
-            <span>✂️ Register Your Salon</span><span className="text-gray-300">›</span>
-          </button>
-        )}
+         
         <button onClick={() => navigate('/forgot-password')}
           className="w-full flex items-center justify-between px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition">
           <span>🔒 Change Password</span><span className="text-gray-300">›</span>

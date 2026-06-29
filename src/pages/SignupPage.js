@@ -1,5 +1,5 @@
  import { useState }          from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate , useSearchParams} from 'react-router-dom';
 import { toast }             from 'react-toastify';
 import { useAuth }           from '../context/AuthContext';
 import { signInWithGoogle }  from '../services/firebase';
@@ -190,10 +190,16 @@ function RightPanel({ children }) {
 export default function SignupPage() {
   const { setCredentials } = useAuth();
   const navigate           = useNavigate();
+  const [searchParams] = useSearchParams();
 
   const [step, setStep] = useState('details'); // 'details' | 'otp' | 'phone'
 
-  const [form, setForm] = useState({ name: '', email: '', phone: '', password: '', confirm: '', role: 'user' });
+  //const [form, setForm] = useState({ name: '', email: '', phone: '', password: '', confirm: '', role: 'user' });
+  // After:
+const [form, setForm] = useState({
+  name: '', email: '', phone: '', password: '', confirm: '',
+  role: searchParams.get('role') === 'salon_owner' ? 'salon_owner' : 'user',
+});
   const [showPw,      setShowPw]      = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [fieldErrors, setFieldErrors] = useState({});

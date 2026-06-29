@@ -142,3 +142,36 @@ export const getUnreadCount            = ()    => api.get('/notifications/unread
 export const markNotificationRead      = (id)  => api.patch(`/notifications/${id}/read`);
 export const markAllNotificationsRead  = ()    => api.patch('/notifications/read-all');
 export const deleteNotification        = (id)  => api.delete(`/notifications/${id}`);
+
+
+// ── Add these to src/services/api.js ─────────────────────────────────────────
+
+export const getSalonStylists = (salonId)        => api.get(`/salons/${salonId}/stylists`);
+export const createStylist    = (salonId, form)  => api.post(`/salons/${salonId}/stylists`, form, { headers: { 'Content-Type': 'multipart/form-data' } });
+export const updateStylist    = (salonId, id, form) => api.put(`/salons/${salonId}/stylists/${id}`, form, { headers: { 'Content-Type': 'multipart/form-data' } });
+export const toggleStylist    = (salonId, id)    => api.patch(`/salons/${salonId}/stylists/${id}/toggle`);
+export const deleteStylist    = (salonId, id)    => api.delete(`/salons/${salonId}/stylists/${id}`);
+
+// ── Add these to src/services/api.js ─────────────────────────────────────────
+
+export const getSalonSlots         = (salonId, date)  => api.get(`/slots/${salonId}`, { params: { date } });
+export const getSalonAvailableDates = (salonId, month) => api.get(`/slots/${salonId}/dates`, { params: { month } });
+
+
+export const getAdminStats        = ()           => api.get('/admin/stats');
+export const getAdminSalons       = (params)     => api.get('/admin/salons', { params });
+export const verifySalon          = (id, data)   => api.patch(`/admin/salons/${id}/verify`, data);
+export const getAdminUsers        = (params)     => api.get('/admin/users', { params });
+export const updateUserStatus     = (id, data)   => api.patch(`/admin/users/${id}/status`, data);
+export const updateUserRole       = (id, data)   => api.patch(`/admin/users/${id}/role`, data);
+export const getAdminRevenue      = (params)     => api.get('/admin/revenue', { params });
+export const getAdminBookings     = (params)     => api.get('/admin/bookings', { params });
+export const flagBooking          = (id, data)   => api.patch(`/admin/bookings/${id}/flag`, data);
+export const refundOverride       = (id, data)   => api.patch(`/admin/bookings/${id}/refund-override`, data);
+export const updateBookingStatus  = (id, data)   => api.patch(`/admin/bookings/${id}/status`, data);
+
+
+
+export const getSalonRevenue    = (salonId, params) => api.get(`/owner/${salonId}/revenue`,   { params });
+export const getSalonCustomers  = (salonId, params) => api.get(`/owner/${salonId}/customers`, { params });
+export const getCustomerHistory = (salonId, userId) => api.get(`/owner/${salonId}/customers/${userId}/history`);
