@@ -1,9 +1,15 @@
  
-import { useState, useEffect, useRef  } from 'react';
+
+
+
+
+
+
+ import { useState, useEffect, useRef, useCallback } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { useAuth } from '../../context/AuthContext';
-import { useLocation as useUserLocation, searchPlaces  } from '../../context/LocationContext';
+import { useLocation as useUserLocation, searchPlaces } from '../../context/LocationContext';
 import useNotifications from '../../hooks/useNotifications';
 
 const PUBLIC_LINKS = [
@@ -19,9 +25,10 @@ export default function Navbar() {
   const navigate = useNavigate();
   const pathname = useLocation().pathname;
 
-  const dropRef    = useRef(null);
-  const locDropRef = useRef(null);
-  const mobileRef  = useRef(null);
+  const dropRef      = useRef(null);
+  const locDropRef    = useRef(null);
+  const mobileRef     = useRef(null); // wraps the mobile menu PANEL
+  const mobileBtnRef  = useRef(null); // wraps the hamburger BUTTON
 
   const [showDrop,    setShowDrop]    = useState(false);
   const [showLocDrop, setShowLocDrop] = useState(false);
@@ -29,7 +36,6 @@ export default function Navbar() {
   const [search,      setSearch]      = useState('');
   const [showSearch,  setShowSearch]  = useState(false);
 
-  // Location search state
   const [locSearch,    setLocSearch]    = useState('');
   const [locResults,   setLocResults]   = useState([]);
   const [locSearching, setLocSearching] = useState(false);
@@ -40,7 +46,13 @@ export default function Navbar() {
     const h = (e) => {
       if (dropRef.current    && !dropRef.current.contains(e.target))    setShowDrop(false);
       if (locDropRef.current && !locDropRef.current.contains(e.target)) { setShowLocDrop(false); setLocSearch(''); setLocResults([]); }
-      if (mobileRef.current  && !mobileRef.current.contains(e.target))  setShowMobile(false);
+
+      // Mobile menu: "inside" means inside the panel OR inside the toggle button.
+      // Checking only the button (old code) meant a mousedown on any link inside
+      // the panel closed the menu before the click/navigation could fire.
+      const clickedInsidePanel = mobileRef.current    && mobileRef.current.contains(e.target);
+      const clickedOnButton    = mobileBtnRef.current && mobileBtnRef.current.contains(e.target);
+      if (!clickedInsidePanel && !clickedOnButton) setShowMobile(false);
     };
     document.addEventListener('mousedown', h);
     return () => document.removeEventListener('mousedown', h);
@@ -53,7 +65,6 @@ export default function Navbar() {
     setSearch(''); setLocSearch(''); setLocResults([]);
   }, [pathname]);
 
-  // Location search with debounce
   const handleLocSearch = (e) => {
     const q = e.target.value;
     setLocSearch(q);
@@ -67,14 +78,14 @@ export default function Navbar() {
     }, 400);
   };
 
-  const handleLocSelect = async (place) => {
+  const handleLocSelect = useCallback(async (place) => {
     await setLocation(place.lat, place.lng);
     setShowLocDrop(false);
     setLocSearch('');
     setLocResults([]);
     toast.success(`📍 Location set to ${place.short || place.label}`);
     window.location.reload();
-  };
+  }, [setLocation]);
 
   const handleDetectGPS = async () => {
     const geo = await detectLocation();
@@ -90,9 +101,38 @@ export default function Navbar() {
   const handleLogout = () => { logout(); toast.success('Logged out.'); navigate('/login'); };
   const handleSearch = (e) => { e.preventDefault(); if (search.trim()) navigate(`/?search=${encodeURIComponent(search.trim())}`); };
 
-  const isActive = (to) => to === '/' ? pathname === '/' : pathname.startsWith(to);
-  const initials = currentUser?.name?.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2) || 'U';
+  const isActive      = (to) => to === '/' ? pathname === '/' : pathname.startsWith(to);
+  const initials      = currentUser?.name?.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2) || 'U';
   const locationLabel = userLocation?.label || 'Set location';
+
+  // ── Dropdown menu items based on role ────────────────────────────────────
+  const dropdownLinks = [
+    { to: '/profile',       icon: '👤', label: 'My Profile'  },
+    { to: '/my-bookings',   icon: '📋', label: 'My Bookings' },
+    { to: '/notifications', icon: '🔔', label: 'Notifications', badge: unreadCount },
+    ...(currentUser?.role === 'admin'
+      ? [{ to: '/admin', icon: '🔐', label: 'Admin Panel' }]
+      : isOwner
+      ? [
+          { to: '/owner/dashboard',      icon: '📊', label: 'Dashboard' },
+          { to: '/owner/register-salon', icon: '➕', label: 'Add Salon'  },
+        ]
+      : []
+    ),
+  ];
+
+  // ── Mobile menu links ─────────────────────────────────────────────────────
+  const mobileLinks = [
+    { to: '/my-bookings',   label: 'My Bookings',   icon: '📋' },
+    { to: '/notifications', label: 'Notifications', icon: '🔔', badge: unreadCount },
+    { to: '/profile',       label: 'Profile',       icon: '👤' },
+    ...(currentUser?.role === 'admin'
+      ? [{ to: '/admin', label: 'Admin Panel', icon: '🔐' }]
+      : isOwner
+      ? [{ to: '/owner/dashboard', label: 'Dashboard', icon: '📊' }]
+      : []
+    ),
+  ];
 
   return (
     <>
@@ -123,18 +163,12 @@ export default function Navbar() {
 
               {showLocDrop && (
                 <div className="absolute left-0 top-11 w-72 bg-white border border-gray-200 rounded-2xl shadow-xl z-50 overflow-hidden">
-
-                  {/* Search input */}
                   <div className="p-3 border-b border-gray-100">
                     <div className="relative">
                       <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">🔍</span>
-                      <input
-                        autoFocus
-                        value={locSearch}
-                        onChange={handleLocSearch}
+                      <input autoFocus value={locSearch} onChange={handleLocSearch}
                         placeholder="Search area, city, landmark…"
-                        className="w-full bg-gray-100 rounded-xl pl-9 pr-3 py-2 text-sm focus:outline-none focus:bg-white border border-transparent focus:border-primary/30 transition"
-                      />
+                        className="w-full bg-gray-100 rounded-xl pl-9 pr-3 py-2 text-sm focus:outline-none focus:bg-white border border-transparent focus:border-primary/30 transition" />
                       {locSearching && (
                         <span className="absolute right-3 top-1/2 -translate-y-1/2">
                           <span className="w-3.5 h-3.5 border-2 border-primary/30 border-t-primary rounded-full animate-spin inline-block" />
@@ -143,7 +177,6 @@ export default function Navbar() {
                     </div>
                   </div>
 
-                  {/* Search results */}
                   {locResults.length > 0 && (
                     <div className="max-h-48 overflow-y-auto">
                       {locResults.map((place, i) => (
@@ -159,12 +192,10 @@ export default function Navbar() {
                     </div>
                   )}
 
-                  {/* No results */}
                   {locSearch.length >= 3 && !locSearching && locResults.length === 0 && (
                     <div className="px-4 py-3 text-sm text-gray-400 text-center">No places found</div>
                   )}
 
-                  {/* GPS detect */}
                   <div className="border-t border-gray-100">
                     <button onClick={handleDetectGPS} disabled={detecting}
                       className="w-full flex items-center gap-3 px-4 py-3 hover:bg-primary-50 transition text-left disabled:opacity-50">
@@ -178,7 +209,6 @@ export default function Navbar() {
                     </button>
                   </div>
 
-                  {/* Current location display */}
                   {userLocation && (
                     <div className="px-4 py-2.5 border-t border-gray-100 bg-gray-50">
                       <p className="text-xs text-gray-400 mb-0.5">Currently set to</p>
@@ -188,7 +218,6 @@ export default function Navbar() {
                     </div>
                   )}
 
-                  {/* Popular cities */}
                   <div className="px-4 py-3 border-t border-gray-100">
                     <p className="text-xs text-gray-400 mb-2">Popular cities</p>
                     <div className="flex flex-wrap gap-1.5">
@@ -248,12 +277,8 @@ export default function Navbar() {
                     Bookings
                   </Link>
 
-                  {/* ── Notification Bell ─────────────────────────────── */}
-                  <Link
-                    to="/notifications"
-                    className="relative p-2 rounded-lg hover:bg-gray-100 transition"
-                    title="Notifications"
-                  >
+                  {/* Bell */}
+                  <Link to="/notifications" className="relative p-2 rounded-lg hover:bg-gray-100 transition" title="Notifications">
                     <span className="text-xl leading-none">🔔</span>
                     {unreadCount > 0 && (
                       <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center px-1 leading-none">
@@ -285,32 +310,12 @@ export default function Navbar() {
                           <p className="font-semibold text-gray-900 text-sm truncate">{currentUser.name}</p>
                           <p className="text-xs text-gray-400 truncate mt-0.5">{currentUser.email}</p>
                           <span className={`badge text-xs mt-1.5 ${isOwner ? 'bg-primary-50 text-primary' : 'bg-secondary-50 text-secondary-dark'}`}>
-                            {isOwner ? '✂️ Salon Owner' : '👤 Customer'}
+                            {isOwner ? '✂️ Salon Owner' : currentUser.role === 'admin' ? '🔐 Admin' : '👤 Customer'}
                           </span>
                         </div>
-                        {[
-                          { to: '/profile',       icon: '👤', label: 'My Profile'     },
-                          { to: '/my-bookings',   icon: '📋', label: 'My Bookings'    },
-                          { to: '/notifications', icon: '🔔', label: 'Notifications',
-                            badge: unreadCount },
-                            // Inside the avatar dropdown, add this condition:
-...(currentUser?.role === 'admin'
-  ? [{ to: '/admin', icon: '🔐', label: 'Admin Panel' }]
-  : []
-),
-                          // ...(isOwner
-                          //   ? [{ to: '/owner/dashboard',      icon: '📊', label: 'Dashboard' },
-                          //      { to: '/owner/register-salon', icon: '➕', label: 'Add Salon'  }]
-                          //   : [{ to: '/signup', icon: '✂️', label: 'Register Salon', highlight: true }]
-                          // ),
-                          ...(isOwner
-  ? [{ to: '/owner/dashboard',      icon: '📊', label: 'Dashboard' },
-     { to: '/owner/register-salon', icon: '➕', label: 'Add Salon'  }]
-  : []
-),
-                        ].map(({ to, icon, label, highlight, badge }) => (
+                        {dropdownLinks.map(({ to, icon, label, badge }) => (
                           <Link key={to} to={to}
-                            className={`flex items-center gap-3 px-4 py-2.5 text-sm transition ${highlight ? 'text-primary hover:bg-primary-50' : 'text-gray-700 hover:bg-gray-50'}`}>
+                            className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition">
                             <span>{icon}</span>
                             <span className="flex-1">{label}</span>
                             {badge > 0 && (
@@ -341,7 +346,7 @@ export default function Navbar() {
             <div className="flex items-center gap-1.5 md:hidden">
               <button onClick={() => setShowSearch((v) => !v)}
                 className="p-2 text-gray-500 hover:text-primary transition rounded-lg hover:bg-gray-100">🔍</button>
-              <div ref={mobileRef} className="relative">
+              <div ref={mobileBtnRef} className="relative">
                 <button onClick={() => setShowMobile((v) => !v)}
                   className="p-2 text-gray-500 hover:text-primary transition rounded-lg hover:bg-gray-100">
                   <div className="w-5 flex flex-col gap-1">
@@ -371,18 +376,15 @@ export default function Navbar() {
 
         {/* Mobile full menu */}
         {showMobile && (
-          <div className="md:hidden bg-white border-t border-gray-100 shadow-lg">
-            {/* Location row with search */}
+          <div ref={mobileRef} className="md:hidden bg-white border-t border-gray-100 shadow-lg">
+            {/* Location row */}
             <div className="px-4 py-3 border-b border-gray-100">
               <p className="text-xs text-gray-400 mb-1.5">Your location</p>
               <div className="relative">
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">📍</span>
-                <input
-                  value={locSearch}
-                  onChange={handleLocSearch}
+                <input value={locSearch} onChange={handleLocSearch}
                   placeholder={detecting ? 'Detecting…' : locationLabel}
-                  className="w-full bg-gray-100 rounded-xl pl-9 pr-20 py-2 text-sm focus:outline-none focus:bg-white border border-transparent focus:border-primary/30 transition"
-                />
+                  className="w-full bg-gray-100 rounded-xl pl-9 pr-20 py-2 text-sm focus:outline-none focus:bg-white border border-transparent focus:border-primary/30 transition" />
                 <button onClick={handleDetectGPS} disabled={detecting}
                   className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-primary font-semibold disabled:opacity-50">
                   {detecting ? '…' : 'GPS'}
@@ -402,6 +404,7 @@ export default function Navbar() {
             </div>
 
             <div className="py-2">
+              {/* Public links */}
               {PUBLIC_LINKS.map(({ to, label }) => (
                 <Link key={to} to={to}
                   className={`flex items-center gap-3 px-4 py-3 text-sm font-medium transition ${
@@ -411,15 +414,11 @@ export default function Navbar() {
                   {label}
                 </Link>
               ))}
+
               {currentUser ? (
                 <>
                   <hr className="my-1 mx-4 border-gray-100" />
-                  {[
-                    { to: '/my-bookings',   label: 'My Bookings',   icon: '📋' },
-                    { to: '/notifications', label: 'Notifications', icon: '🔔', badge: unreadCount },
-                    { to: '/profile',       label: 'Profile',       icon: '👤' },
-                    ...(isOwner ? [{ to: '/owner/dashboard', label: 'Dashboard', icon: '📊' }] : []),
-                  ].map(({ to, label, icon, badge }) => (
+                  {mobileLinks.map(({ to, label, icon, badge }) => (
                     <Link key={to} to={to}
                       className={`flex items-center gap-3 px-4 py-3 text-sm transition ${
                         isActive(to) ? 'text-primary bg-primary-50 font-medium' : 'text-gray-700 hover:bg-gray-50'
@@ -457,13 +456,15 @@ export default function Navbar() {
       <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-40">
         <div className="flex">
           {[
-            { to: '/',               icon: '🏠', label: 'Home'     },
-            { to: '/my-bookings',    icon: '📋', label: 'Bookings' },
-            { to: '/notifications',  icon: '🔔', label: 'Alerts',  badge: unreadCount },
-            { to: '/contact',        icon: '💬', label: 'Contact'  },
+            { to: '/',              icon: '🏠', label: 'Home'     },
+            { to: '/my-bookings',   icon: '📋', label: 'Bookings' },
+            { to: '/notifications', icon: '🔔', label: 'Alerts', badge: unreadCount },
+            { to: '/contact',       icon: '💬', label: 'Contact'  },
             currentUser
               ? isOwner
                 ? { to: '/owner/dashboard', icon: '📊', label: 'Salon'   }
+                : currentUser.role === 'admin'
+                ? { to: '/admin',           icon: '🔐', label: 'Admin'   }
                 : { to: '/profile',         icon: '👤', label: 'Profile' }
               : { to: '/login',             icon: '👤', label: 'Login'   },
           ].map(({ to, icon, label, badge }) => (
