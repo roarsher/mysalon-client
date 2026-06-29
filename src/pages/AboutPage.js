@@ -8,10 +8,10 @@ const STATS = [
 ];
 
 const TEAM = [
-  { name: 'Arjun Mehta',   role: 'Co-Founder & CEO',     emoji: '👨‍💼', desc: 'Ex-Swiggy. Passionate about solving real-world wait-time problems.' },
-  { name: 'Priya Sharma',  role: 'Co-Founder & CTO',     emoji: '👩‍💻', desc: 'Full-stack engineer. Built scalable systems at Razorpay.' },
-  { name: 'Rahul Das',     role: 'Head of Growth',       emoji: '🚀', desc: 'Previously at Zomato. Grew 200+ restaurant partnerships.' },
-  { name: 'Sneha Iyer',    role: 'Head of Design',       emoji: '🎨', desc: 'UX lead focused on seamless mobile-first experiences.' },
+  { name: 'Rohit Kumar ',   role: 'Co-Founder & CEO',     emoji: '👨‍💼', desc: 'Ex-Swiggy. Passionate about solving real-world wait-time problems.' },
+  { name: 'Sonu Kumar ',  role: 'Co-Founder & CTO',     emoji: '👩‍💻', desc: 'Full-stack engineer. Built scalable systems at Razorpay.' },
+  { name: 'Mohit Kumar',     role: 'Head of Growth',       emoji: '🚀', desc: 'Previously at Zomato. Grew 200+ restaurant partnerships.' },
+  { name: 'Sneha Kumari',    role: 'Head of Design',       emoji: '🎨', desc: 'UX lead focused on seamless mobile-first experiences.' },
 ];
 
 const VALUES = [
@@ -87,35 +87,7 @@ export default function AboutPage() {
           ))}
         </div>
       </div>
-
-      {/* ── Story timeline ───────────────────────────────────────────────── */}
-      <div className="bg-white border-y border-gray-200 py-12">
-        <div className="max-w-3xl mx-auto px-4">
-          <h2 className="text-2xl font-bold text-gray-900 text-center mb-8">How it started</h2>
-          <div className="space-y-0">
-            {[
-              { year: '2023', title: 'The idea',       desc: 'Arjun waited 45 mins at his local barber with no idea when his turn was. He texted Priya: "Can we fix this?"', icon: '💡' },
-              { year: 'Q1 2024', title: 'Beta launch', desc: 'Launched in Bengaluru with 12 salons. 800 bookings in the first month with zero marketing.', icon: '🚀' },
-              { year: 'Q3 2024', title: 'Expanded',    desc: 'Grew to 5 cities, 150 salons, and integrated Razorpay for payments. Raised seed funding.', icon: '📈' },
-              { year: '2025',   title: 'Today',        desc: '500+ salons, 50,000+ customers. Building the next version with real-time notifications and AI slot predictions.', icon: '🌟' },
-            ].map((item, i, arr) => (
-              <div key={item.year} className="flex gap-4">
-                <div className="flex flex-col items-center">
-                  <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center text-lg flex-shrink-0 shadow-md">
-                    {item.icon}
-                  </div>
-                  {i < arr.length - 1 && <div className="w-0.5 h-8 bg-gray-200 my-1" />}
-                </div>
-                <div className="pb-8">
-                  <p className="text-xs font-bold text-primary uppercase tracking-wide mb-0.5">{item.year}</p>
-                  <p className="font-semibold text-gray-900 mb-1">{item.title}</p>
-                  <p className="text-sm text-gray-500 leading-relaxed">{item.desc}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
+ 
 
       {/* ── Team ─────────────────────────────────────────────────────────── */}
       <div className="max-w-4xl mx-auto px-4 py-12">

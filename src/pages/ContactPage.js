@@ -15,8 +15,8 @@ const CONTACT_CARDS = [
     icon: '💬',
     title: 'WhatsApp Support',
     desc: 'Quick help — we reply within 1 hour',
-    value: '+91 9234093977',
-    action: () => window.open('https://wa.me/919234093977'),
+    value: '+91 9031210570',
+    action: () => window.open('https://wa.me/9031210570'),
     cta: 'Chat on WhatsApp',
     color: 'bg-green-50 text-green-600',
   },
@@ -24,8 +24,8 @@ const CONTACT_CARDS = [
     icon: '📞',
     title: 'Call Us',
     desc: 'Mon–Sat, 9 AM to 7 PM IST',
-    value: '+91 98765 43210',
-    action: () => window.open('tel:+919876543210'),
+    value: '+91 9031210570',
+    action: () => window.open('tel:+919031210570'),
     cta: 'Call now',
     color: 'bg-purple-50 text-purple-600',
   },
@@ -235,8 +235,14 @@ export default function ContactPage() {
                 <p className="font-semibold text-gray-900 text-sm mb-0.5">Our Office</p>
                 <p className="text-xs text-gray-400 leading-relaxed">
                   MYSALON Technologies Pvt. Ltd.<br />
-                  91Springboard, Koramangala<br />
-                  Bengaluru, Karnataka — 560034
+                  Bhagalpur, TilkaManjhi — 813210<br />
+                  
+                </p>
+                <p className="text-xs text-gray-400 mt-1.5">
+                  Phone: +91 9031210570
+                </p>
+                <p className="text-xs text-gray-400 mt-1.5">
+                  Email: contact@mysalon.in
                 </p>
                 <p className="text-xs text-gray-400 mt-1.5">
                   Mon–Fri: 9 AM – 6 PM IST
